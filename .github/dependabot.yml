@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # Monitor GitHub Actions versions (h3ow3d-github-actions)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    reviewers:
+      - "h3ow3d"
+    open-pull-requests-limit: 5
+    # Auto-merge patch and minor updates
+    groups:
+      github-actions:
+        patterns:
+          - "*"
