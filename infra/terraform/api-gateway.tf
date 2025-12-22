@@ -14,7 +14,7 @@ resource "aws_api_gateway_rest_api" "clarity" {
 
 # API Gateway resources and methods
 module "api_gateway" {
-  source = "github.com/h3ow3d/h3ow3d-infra-api-gateway?ref=v1.0.0"
+  source = "github.com/h3ow3d/h3ow3d-infra-api-gateway?ref=main"
 
   api_id            = aws_api_gateway_rest_api.clarity.id
   root_resource_id  = aws_api_gateway_rest_api.clarity.root_resource_id
