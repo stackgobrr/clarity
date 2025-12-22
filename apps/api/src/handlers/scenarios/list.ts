@@ -3,15 +3,25 @@
  * GET /scenarios
  */
 import type { APIGatewayProxyHandler } from 'aws-lambda';
+import { listScenarios } from '../../services/scenarios.js';
 
-export const handler: APIGatewayProxyHandler = async (_event) => {
-  // TODO: Implement scenario listing logic
-  // 1. Query DynamoDB for active scenarios
-  // 2. Return list with metadata (title, description, difficulty, tags)
+export const handler: APIGatewayProxyHandler = async () => {
+  try {
+    // Query for active scenarios
+    const scenarios = await listScenarios();
 
-  return {
-    statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: 'List scenarios - not yet implemented' }),
-  };
+    // Return list with metadata
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenarios }),
+    };
+  } catch (error) {
+    console.error('Error listing scenarios:', error);
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
 };

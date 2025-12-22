@@ -9,6 +9,7 @@ module.exports = {
     },
     project: ['./apps/*/tsconfig.json'],
   },
+  ignorePatterns: ['*.config.ts', '*.config.js'],
   env: {
     browser: true,
     node: true,

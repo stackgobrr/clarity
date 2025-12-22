@@ -3,22 +3,56 @@
  * GET /attempts/{id}
  */
 import type { APIGatewayProxyHandler } from 'aws-lambda';
+import { getAttempt } from '../../services/attempts.js';
 
 export const handler: APIGatewayProxyHandler = async (event) => {
-  const attemptId = event.pathParameters?.id;
+  try {
+    const attemptId = event.pathParameters?.id;
 
-  // TODO: Implement attempt retrieval logic
-  // 1. Validate attemptId
-  // 2. Query DynamoDB for attempt
-  // 3. Check authorization (user can only access their own attempts)
-  // 4. Return attempt data with scores and feedback
+    if (!attemptId) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Attempt ID is required' }),
+      };
+    }
 
-  return {
-    statusCode: 200,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      attemptId,
-      message: 'Get attempt - not yet implemented',
-    }),
-  };
+    // Get userId from Cognito (for MVP, we'll use a test user)
+    const userId =
+      event.requestContext.authorizer?.claims?.sub || 'test-user-123';
+
+    // Query DynamoDB for attempt
+    const attempt = await getAttempt(attemptId);
+
+    if (!attempt) {
+      return {
+        statusCode: 404,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Attempt not found' }),
+      };
+    }
+
+    // Check authorization (user can only access their own attempts)
+    if (attempt.userId !== userId) {
+      return {
+        statusCode: 403,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Unauthorized' }),
+      };
+    }
+
+    // Return attempt data
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(attempt),
+    };
+  } catch (error) {
+    console.error('Error getting attempt:', error);
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal server error' }),
+    };
+  }
 };
