@@ -1,4 +1,4 @@
-name: Deploy Clarity MVP
+name: Deploy Clarity
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     paths:
       - 'apps/api/**'
       - 'infra/terraform/**'
-      - '.github/workflows/deploy-mvp.yml'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 env:
@@ -27,62 +27,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Build Lambda functions
+        uses: h3ow3d/h3ow3d-github-actions/actions/node-build-test@main
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: |
-          cd apps/api
-          npm ci
-      
-      - name: Type check
-        run: |
-          cd apps/api
-          npm run type-check
-      
-      - name: Build Lambda functions
-        run: |
-          cd apps/api
-          npm run build
+          working-directory: 'apps/api'
+          type-check-command: 'npm run type-check'
+          build-command: 'npm run build'
       
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: h3ow3d/h3ow3d-github-actions/actions/aws-configure@main
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          role-session-name: GitHubActions-Deploy
           aws-region: ${{ env.AWS_REGION }}
+          auth-method: 'oidc'
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: 'GitHubActions-Deploy'
       
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Deploy infrastructure
+        uses: h3ow3d/h3ow3d-github-actions/actions/terraform-deploy@main
         with:
-          terraform_version: 1.5.0
-      
-      - name: Terraform Init
-        working-directory: infra/terraform
-        run: terraform init
-      
-      - name: Terraform Format Check
-        working-directory: infra/terraform
-        run: terraform fmt -check
-        continue-on-error: true
-      
-      - name: Terraform Validate
-        working-directory: infra/terraform
-        run: terraform validate
-      
-      - name: Terraform Plan
-        working-directory: infra/terraform
-        run: terraform plan -out=tfplan
-        env:
-          TF_VAR_environment: dev
-          TF_VAR_aws_region: ${{ env.AWS_REGION }}
-      
-      - name: Terraform Apply
-        working-directory: infra/terraform
-        run: terraform apply -auto-approve tfplan
+          terraform-version: '1.5.0'
+          working-directory: 'infra/terraform'
+          auto-approve: 'true'
       
       - name: Get API Endpoint
         id: api-endpoint
