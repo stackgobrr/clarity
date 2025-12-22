@@ -245,26 +245,59 @@ resource "aws_api_gateway_rest_api" "clarity" {
 
 # API Gateway resources and methods
 module "api_gateway" {
-  source = "./modules/api-gateway"
+  source = "github.com/h3ow3d/h3ow3d-infra-api-gateway?ref=v1.0.0"
 
   api_id            = aws_api_gateway_rest_api.clarity.id
   root_resource_id  = aws_api_gateway_rest_api.clarity.root_resource_id
   api_execution_arn = aws_api_gateway_rest_api.clarity.execution_arn
-  environment       = var.environment
 
-  # Lambda function ARNs
-  submit_attempt_arn = aws_lambda_function.submit_attempt.arn
-  get_attempt_arn    = aws_lambda_function.get_attempt.arn
-  list_attempts_arn  = aws_lambda_function.list_attempts.arn
-  list_scenarios_arn = aws_lambda_function.list_scenarios.arn
-  get_scenario_arn   = aws_lambda_function.get_scenario.arn
+  routes = {
+    submit_attempt = {
+      path        = "/attempts"
+      http_method = "POST"
+      lambda_arn  = aws_lambda_function.submit_attempt.arn
+      lambda_name = aws_lambda_function.submit_attempt.function_name
+    }
 
-  # Lambda function names for invoke permissions
-  submit_attempt_name = aws_lambda_function.submit_attempt.function_name
-  get_attempt_name    = aws_lambda_function.get_attempt.function_name
-  list_attempts_name  = aws_lambda_function.list_attempts.function_name
-  list_scenarios_name = aws_lambda_function.list_scenarios.function_name
-  get_scenario_name   = aws_lambda_function.get_scenario.function_name
+    list_attempts = {
+      path        = "/attempts"
+      http_method = "GET"
+      lambda_arn  = aws_lambda_function.list_attempts.arn
+      lambda_name = aws_lambda_function.list_attempts.function_name
+    }
+
+    get_attempt = {
+      path        = "/attempts/{id}"
+      http_method = "GET"
+      lambda_arn  = aws_lambda_function.get_attempt.arn
+      lambda_name = aws_lambda_function.get_attempt.function_name
+      request_params = {
+        "method.request.path.id" = true
+      }
+    }
+
+    list_scenarios = {
+      path        = "/scenarios"
+      http_method = "GET"
+      lambda_arn  = aws_lambda_function.list_scenarios.arn
+      lambda_name = aws_lambda_function.list_scenarios.function_name
+    }
+
+    get_scenario = {
+      path        = "/scenarios/{id}"
+      http_method = "GET"
+      lambda_arn  = aws_lambda_function.get_scenario.arn
+      lambda_name = aws_lambda_function.get_scenario.function_name
+      request_params = {
+        "method.request.path.id" = true
+      }
+    }
+  }
+
+  # CORS enabled for frontend access
+  cors_configuration = {
+    enabled = true
+  }
 }
 
 # API Gateway deployment
