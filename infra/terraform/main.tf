@@ -5,7 +5,7 @@
 
 terraform {
   required_version = ">= 1.5.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -18,7 +18,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "clarity-terraform-state"
+    bucket = "stackgobrr-projects-terraform-state"
     key    = "clarity/terraform.tfstate"
     region = "eu-west-2"
   }
@@ -266,7 +266,7 @@ module "api_gateway" {
   root_resource_id     = aws_api_gateway_rest_api.clarity.root_resource_id
   api_execution_arn    = aws_api_gateway_rest_api.clarity.execution_arn
   environment          = var.environment
-  
+
   # Lambda function ARNs
   submit_attempt_arn   = aws_lambda_function.submit_attempt.arn
   get_attempt_arn      = aws_lambda_function.get_attempt.arn
