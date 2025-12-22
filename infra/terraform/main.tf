@@ -38,9 +38,9 @@ provider "aws" {
 
 # DynamoDB table for attempts
 resource "aws_dynamodb_table" "attempts" {
-  name           = "${var.environment}-clarity-attempts"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "attemptId"
+  name         = "${var.environment}-clarity-attempts"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "attemptId"
 
   attribute {
     name = "attemptId"
@@ -158,12 +158,12 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "submit_attempt" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.environment}-clarity-submit-attempt"
-  role            = aws_iam_role.lambda_execution.arn
-  handler         = "handlers/attempts/submit.handler"
+  role             = aws_iam_role.lambda_execution.arn
+  handler          = "handlers/attempts/submit.handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  runtime         = "nodejs20.x"
-  timeout         = 60
-  memory_size     = 512
+  runtime          = "nodejs20.x"
+  timeout          = 60
+  memory_size      = 512
 
   environment {
     variables = {
@@ -177,12 +177,12 @@ resource "aws_lambda_function" "submit_attempt" {
 resource "aws_lambda_function" "get_attempt" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.environment}-clarity-get-attempt"
-  role            = aws_iam_role.lambda_execution.arn
-  handler         = "handlers/attempts/get.handler"
+  role             = aws_iam_role.lambda_execution.arn
+  handler          = "handlers/attempts/get.handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  runtime         = "nodejs20.x"
-  timeout         = 10
-  memory_size     = 256
+  runtime          = "nodejs20.x"
+  timeout          = 10
+  memory_size      = 256
 
   environment {
     variables = {
@@ -195,12 +195,12 @@ resource "aws_lambda_function" "get_attempt" {
 resource "aws_lambda_function" "list_attempts" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.environment}-clarity-list-attempts"
-  role            = aws_iam_role.lambda_execution.arn
-  handler         = "handlers/attempts/list.handler"
+  role             = aws_iam_role.lambda_execution.arn
+  handler          = "handlers/attempts/list.handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  runtime         = "nodejs20.x"
-  timeout         = 10
-  memory_size     = 256
+  runtime          = "nodejs20.x"
+  timeout          = 10
+  memory_size      = 256
 
   environment {
     variables = {
@@ -213,24 +213,24 @@ resource "aws_lambda_function" "list_attempts" {
 resource "aws_lambda_function" "list_scenarios" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.environment}-clarity-list-scenarios"
-  role            = aws_iam_role.lambda_execution.arn
-  handler         = "handlers/scenarios/list.handler"
+  role             = aws_iam_role.lambda_execution.arn
+  handler          = "handlers/scenarios/list.handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  runtime         = "nodejs20.x"
-  timeout         = 5
-  memory_size     = 256
+  runtime          = "nodejs20.x"
+  timeout          = 5
+  memory_size      = 256
 }
 
 # Lambda function for getting scenario
 resource "aws_lambda_function" "get_scenario" {
   filename         = data.archive_file.lambda_zip.output_path
   function_name    = "${var.environment}-clarity-get-scenario"
-  role            = aws_iam_role.lambda_execution.arn
-  handler         = "handlers/scenarios/get.handler"
+  role             = aws_iam_role.lambda_execution.arn
+  handler          = "handlers/scenarios/get.handler"
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
-  runtime         = "nodejs20.x"
-  timeout         = 5
-  memory_size     = 256
+  runtime          = "nodejs20.x"
+  timeout          = 5
+  memory_size      = 256
 }
 
 # API Gateway REST API
@@ -247,24 +247,24 @@ resource "aws_api_gateway_rest_api" "clarity" {
 module "api_gateway" {
   source = "./modules/api-gateway"
 
-  api_id               = aws_api_gateway_rest_api.clarity.id
-  root_resource_id     = aws_api_gateway_rest_api.clarity.root_resource_id
-  api_execution_arn    = aws_api_gateway_rest_api.clarity.execution_arn
-  environment          = var.environment
+  api_id            = aws_api_gateway_rest_api.clarity.id
+  root_resource_id  = aws_api_gateway_rest_api.clarity.root_resource_id
+  api_execution_arn = aws_api_gateway_rest_api.clarity.execution_arn
+  environment       = var.environment
 
   # Lambda function ARNs
-  submit_attempt_arn   = aws_lambda_function.submit_attempt.arn
-  get_attempt_arn      = aws_lambda_function.get_attempt.arn
-  list_attempts_arn    = aws_lambda_function.list_attempts.arn
-  list_scenarios_arn   = aws_lambda_function.list_scenarios.arn
-  get_scenario_arn     = aws_lambda_function.get_scenario.arn
+  submit_attempt_arn = aws_lambda_function.submit_attempt.arn
+  get_attempt_arn    = aws_lambda_function.get_attempt.arn
+  list_attempts_arn  = aws_lambda_function.list_attempts.arn
+  list_scenarios_arn = aws_lambda_function.list_scenarios.arn
+  get_scenario_arn   = aws_lambda_function.get_scenario.arn
 
   # Lambda function names for invoke permissions
-  submit_attempt_name  = aws_lambda_function.submit_attempt.function_name
-  get_attempt_name     = aws_lambda_function.get_attempt.function_name
-  list_attempts_name   = aws_lambda_function.list_attempts.function_name
-  list_scenarios_name  = aws_lambda_function.list_scenarios.function_name
-  get_scenario_name    = aws_lambda_function.get_scenario.function_name
+  submit_attempt_name = aws_lambda_function.submit_attempt.function_name
+  get_attempt_name    = aws_lambda_function.get_attempt.function_name
+  list_attempts_name  = aws_lambda_function.list_attempts.function_name
+  list_scenarios_name = aws_lambda_function.list_scenarios.function_name
+  get_scenario_name   = aws_lambda_function.get_scenario.function_name
 }
 
 # API Gateway deployment
