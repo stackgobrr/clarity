@@ -43,6 +43,18 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           role-session-name: 'GitHubActions-Deploy'
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '1.14.1'
+
+      - name: Migrate State (if needed)
+        working-directory: infra/terraform
+        continue-on-error: true
+        run: |
+          terraform init -upgrade
+          terraform state replace-provider 'registry.terraform.io/hashicorp/aws' 'registry.terraform.io/hashicorp/aws' || true
+
       - name: Deploy infrastructure
         uses: h3ow3d/h3ow3d-github-actions/actions/terraform-deploy@v1.0.0
         with:
