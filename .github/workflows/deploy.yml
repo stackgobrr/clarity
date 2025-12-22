@@ -26,7 +26,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Build Lambda functions
         uses: h3ow3d/h3ow3d-github-actions/actions/node-build-test@v1.0.0
